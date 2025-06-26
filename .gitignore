@@ -1,3 +1,5 @@
+# IDE
+.idea
 # Logs
 logs
 *.log
@@ -40,3 +42,6 @@ site
 
 **/.~
 .~
+/.idea/modules.xml
+/.idea/remarkable-katex-plus.iml
+/.idea/vcs.xml

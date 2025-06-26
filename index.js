@@ -17,8 +17,10 @@ const rkatex = (md, options) => {
    * Render the contents as KaTeX
    */
   const renderKatex = (source, displayMode) => katex.renderToString(source,
-                                                                    {displayMode: displayMode,
-                                                                     throwOnError: false});
+    {
+      displayMode: displayMode,
+      throwOnError: false
+    });
 
   /**
    * Parse '$$' as a block. Based off of similar method in remarkable.
@@ -43,7 +45,7 @@ const rkatex = (md, options) => {
     // search end of block
     let nextLine = startLine;
 
-    for (;;) {
+    for (; ;) {
       ++nextLine;
       if (nextLine >= endLine) { break; }
 
@@ -68,11 +70,13 @@ const rkatex = (md, options) => {
     len = state.tShift[startLine];
     state.line = nextLine + (haveEndMarker ? 1 : 0);
     const content = state.getLines(startLine + 1, nextLine, len, true)
-            .replace(/[ \n]+/g, ' ')
-            .trim();
+      .replace(/[ \n]+/g, ' ')
+      .trim();
 
-    state.tokens.push({type: 'katex', params: null, content: content, lines: [startLine, state.line],
-                       level: state.level, block: true});
+    state.tokens.push({
+      type: 'katex', params: null, content: content, lines: [startLine, state.line],
+      level: state.level, block: true
+    });
     return true;
   };
 
@@ -111,9 +115,9 @@ const rkatex = (md, options) => {
         if (matchEnd - matchStart === marker.length) {
           if (!silent) {
             const content = state.src.slice(spanStart, matchStart)
-                .replace(/[ \n]+/g, ' ')
-                .trim();
-            state.push({type: 'katex', content: content, block: marker.length > 1, level: state.level});
+              .replace(/[ \n]+/g, ' ')
+              .trim();
+            state.push({ type: 'katex', content: content, block: marker.length > 1, level: state.level });
           }
           state.pos = matchEnd;
           return true;

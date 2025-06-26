@@ -1,9 +1,9 @@
 {
-  "name": "remarkable-katex",
-  "version": "1.2.1",
+  "name": "remarkable-katex-plus",
+  "version": "1.0.0",
   "description": "Plugin for Remarkable to process embedded math expressions in Markdown text.",
   "main": "index.js",
-  "homepage": "https://github.com/bradhowes/remarkable-katex",
+  "homepage": "https://github.com/MilkWind/remarkable-katex-plus",
   "keywords": [
     "remarkable",
     "katex",
@@ -11,9 +11,9 @@
     "markdown"
   ],
   "author": {
-    "name": "Brad Howes",
-    "email": "bradhowes@mac.com",
-    "url": "https://keystrokecountdown.com"
+    "name": "MilkWind",
+    "email": "2250957906@qq.com",
+    "url": "https://milkwind.github.io"
   },
   "license": "MIT",
   "devDependencies": {
@@ -22,8 +22,8 @@
     "vows": "0"
   },
   "repository": {
-    "type": "git",
-    "url": "git://github.com/bradhowes/remarkable-katex.git"
+    "type": "https",
+    "url": "https://github.com/MilkWind/remarkable-katex-plus.git"
   },
   "scripts": {
     "test": "node_modules/vows/bin/vows --spec index.test.js"

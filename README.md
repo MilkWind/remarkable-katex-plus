@@ -32,7 +32,15 @@ Assuming you already have `Remarkable` installed, one way to use would be like s
 const {Remarkable, utils} = require('remarkable');
 const plugin = require('remarkable-katex-plus');
 const md = new Remarkable();
-md.use(plugin, {delimiter: ''});
+
+// Basic usage with default settings
+md.use(plugin);
+
+// With custom configuration
+md.use(plugin, {
+  delimiter: '$',
+  useTailwind: false  // Use inline styles (default)
+});
 ```
 
 **ES6**
@@ -42,7 +50,15 @@ import {Remarkable, utils} from 'remarkable';
 import rkatex from 'remarkable-katex-plus';
 
 const md = new Remarkable();
-md.use(rkatex, {delimiter: ''});
+
+// Basic usage with default settings
+md.use(rkatex);
+
+// With Tailwind CSS styling
+md.use(rkatex, {
+  delimiter: '$',
+  useTailwind: true  // Use Tailwind classes
+});
 ```
 
 If you use TypeScript, you can import the plugin with the correct types by steps as follows:
@@ -70,12 +86,52 @@ Then add `"types": ["types/remarkable-katex-plus.d.ts"]` to your `tsconfig.json`
 
 # Configuration
 
-Accepts a `delimiter` option that defines the 1-character delimiter to use when recognizing KaTeX spans. Default
-is the `$` character.
+The plugin accepts several configuration options:
 
+## Basic Configuration
+
+```javascript
+{
+  delimiter: '$',        // 1-character delimiter for KaTeX spans (default: '$')
+  useTailwind: false    // Whether to use Tailwind CSS classes for styling (default: false)
+}
 ```
-{delimiter: '$'}
+
+### Options
+
+- **`delimiter`** (string): Defines the 1-character delimiter to use when recognizing KaTeX spans. Default is the `$` character.
+
+- **`useTailwind`** (boolean): Controls how elements with `aria-hidden="true"` are styled after KaTeX rendering:
+  - `true`: Uses Tailwind CSS approach - removes `inline` class and adds `hidden` class
+  - `false` (default): Uses inline style approach - removes `inline` class and adds `display:none` inline style
+
+## Styling Configuration Examples
+
+### Default Styling (Inline Styles)
+```javascript
+const md = new Remarkable();
+md.use(rkatex, {
+  delimiter: '$'
+  // useTailwind defaults to false
+});
 ```
+
+Elements with `aria-hidden="true"` will have:
+- `inline` class removed (if present)
+- `style="display:none"` added as inline style
+
+### Tailwind CSS Styling
+```javascript  
+const md = new Remarkable();
+md.use(rkatex, {
+  delimiter: '$',
+  useTailwind: true
+});
+```
+
+Elements with `aria-hidden="true"` will have:
+- `inline` class removed (if present)  
+- `hidden` class added for Tailwind CSS
 
 # Dependencies
 

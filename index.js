@@ -11,16 +11,33 @@ const rkatex = (md, options) => {
   const delimiter = opts.delimiter || dollar;
   if (delimiter.length !== 1) { throw new Error('invalid delimiter'); }
 
+  // Import styling utilities
+  const { applyCustomStyling } = require('./utils');
+
+  // Extract styling configuration
+  const stylingConfig = {
+    useTailwind: opts.useTailwind || false,
+    // Add other styling options here as needed
+  };
+
   const katex = require("katex");
 
   /**
    * Render the contents as KaTeX
    */
-  const renderKatex = (source, displayMode) => katex.renderToString(source,
-    {
+  const renderKatex = (source, displayMode) => {
+    const rendered = katex.renderToString(source, {
       displayMode: displayMode,
       throwOnError: false
     });
+    
+    // Apply custom styling if configuration is provided
+    if (stylingConfig.useTailwind || Object.keys(stylingConfig).length > 1) {
+      return applyCustomStyling(rendered, stylingConfig);
+    }
+    
+    return rendered;
+  };
 
   /**
    * Parse '$$' as a block. Based off of similar method in remarkable.

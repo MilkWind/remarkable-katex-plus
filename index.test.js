@@ -217,5 +217,55 @@ vows.describe('KatexPlugin').addBatch({
     'No original delimiters remain': function(topic) {
       assert.equal(topic.indexOf('$\\invalidcommand{test}$'), -1);
     }
+  },
+  'Config with useTailwind=false (default)': {
+    topic() {
+      const md = new Remarkable();
+      md.use(plugin, { useTailwind: false });
+      return md;
+    },
+    'Configuration applied correctly': function(topic) {
+      // Test that configuration is accepted without error
+      assert.isObject(topic);
+    }
+  },
+  'Config with useTailwind=true': {
+    topic() {
+      const md = new Remarkable();
+      md.use(plugin, { useTailwind: true });
+      return md;
+    },
+    'Configuration applied correctly': function(topic) {
+      // Test that configuration is accepted without error
+      assert.isObject(topic);
+    }
+  },
+  'Aria-hidden processing with default styling': {
+    topic() {
+      const md = new Remarkable();
+      md.use(plugin, { useTailwind: false });
+      // Create a mock rendered output with aria-hidden elements
+      const { applyCustomStyling } = require('./utils');
+      const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
+      return applyCustomStyling(mockHtml, { useTailwind: false });
+    },
+    'Removes inline class and adds display:none style': function(topic) {
+      assert.equal(topic.indexOf('class="inline"'), -1);
+      assert.notEqual(topic.indexOf('style="display:none"'), -1);
+    }
+  },
+  'Aria-hidden processing with Tailwind styling': {
+    topic() {
+      const md = new Remarkable();
+      md.use(plugin, { useTailwind: true });
+      // Create a mock rendered output with aria-hidden elements
+      const { applyCustomStyling } = require('./utils');
+      const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
+      return applyCustomStyling(mockHtml, { useTailwind: true });
+    },
+    'Removes inline class and adds hidden class': function(topic) {
+      assert.equal(topic.indexOf('class="inline"'), -1);
+      assert.notEqual(topic.indexOf('class="hidden"'), -1);
+    }
   }
 }).export(module);

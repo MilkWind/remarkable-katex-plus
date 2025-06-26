@@ -30,7 +30,7 @@ Assuming you already have `Remarkable` installed, one way to use would be like s
 
 ```javascript
 const {Remarkable, utils} = require('remarkable');
-const plugin = require('remarkable-katex');
+const plugin = require('remarkable-katex-plus');
 const md = new Remarkable();
 md.use(plugin, {delimiter: ''});
 ```
@@ -39,7 +39,7 @@ md.use(plugin, {delimiter: ''});
 
 ```javascript
 import {Remarkable, utils} from 'remarkable';
-import rkatex from 'remarkable-katex';
+import rkatex from 'remarkable-katex-plus';
 
 const md = new Remarkable();
 md.use(rkatex, {delimiter: ''});
@@ -48,21 +48,21 @@ md.use(rkatex, {delimiter: ''});
 If you use TypeScript, you can import the plugin with the correct types by steps as follows:
 
 ```typescript
-// remarkable-katex.d.ts
+// remarkable-katex-plus.d.ts
 // create this file in any directory you want, such as "types/remarkable-katex.d.ts"
-declare module 'remarkable-katex' {
+declare module 'remarkable-katex-plus' {
     const rkatex: (md: Remarkable, options?: object) => void;
     export = rkatex;
 }
 ```
 
-Then add `"types": ["types/remarkable-katex.d.ts"]` to your `tsconfig.json`
+Then add `"types": ["types/remarkable-katex-plus.d.ts"]` to your `tsconfig.json`
 
 ```json
 {
   "compilerOptions": {
     "include": [
-      "types/remarkable-katex.d.ts"
+      "types/remarkable-katex-plus.d.ts"
     ]
   }
 }

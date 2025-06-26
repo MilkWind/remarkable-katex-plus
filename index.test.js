@@ -263,9 +263,9 @@ vows.describe('KatexPlugin').addBatch({
       const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
       return applyCustomStyling(mockHtml, { useTailwind: true });
     },
-    'Removes inline class and adds hidden class': function(topic) {
+    'Removes inline class and adds display:none style': function(topic) {
       assert.equal(topic.indexOf('class="inline"'), -1);
-      assert.notEqual(topic.indexOf('class="hidden"'), -1);
+      assert.notEqual(topic.indexOf('style="display:none"'), -1);
     }
   }
 }).export(module);

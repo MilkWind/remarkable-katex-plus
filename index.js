@@ -14,7 +14,7 @@ const rkatex = (md, options) => {
   // Import styling utilities
   const { applyCustomStyling } = require('./utils');
 
-  // Extract styling configuration
+  // Extract styling configuration (kept for backward compatibility)
   const stylingConfig = {
     useTailwind: opts.useTailwind || false,
     // Add other styling options here as needed
@@ -31,12 +31,8 @@ const rkatex = (md, options) => {
       throwOnError: false
     });
     
-    // Apply custom styling if configuration is provided
-    if (stylingConfig.useTailwind || Object.keys(stylingConfig).length > 1) {
-      return applyCustomStyling(rendered, stylingConfig);
-    }
-    
-    return rendered;
+    // Always apply custom styling to process aria-hidden elements
+    return applyCustomStyling(rendered, stylingConfig);
   };
 
   /**

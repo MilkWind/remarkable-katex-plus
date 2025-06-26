@@ -26,6 +26,6 @@
     "url": "https://github.com/MilkWind/remarkable-katex-plus.git"
   },
   "scripts": {
-    "test": "node_modules/vows/bin/vows --spec index.test.js"
+    "test": "npx vows --spec index.test.js"
   }
 }

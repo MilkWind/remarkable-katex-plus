@@ -66,9 +66,12 @@ const rkatex = (md, options) => {
       break;
     }
 
+    // Only process if we found a complete block (with end marker)
+    if (!haveEndMarker) { return false; }
+
     // If a fence has heading spaces, they should be removed from its inner block
     len = state.tShift[startLine];
-    state.line = nextLine + (haveEndMarker ? 1 : 0);
+    state.line = nextLine + 1; // Always advance past the end marker
     const content = state.getLines(startLine + 1, nextLine, len, true)
       .replace(/[ \n]+/g, ' ')
       .trim();
@@ -126,15 +129,19 @@ const rkatex = (md, options) => {
       pos += 1;
     }
 
-    if (!silent) { state.pending += marker; }
-    state.pos += marker.length;
-
-    return true;
+    // If we reach here, no matching closing delimiter was found
+    // Don't add anything to pending and don't advance position to avoid partial rendering
+    return false;
   };
 
   md.inline.ruler.push('katex', parseInlineKatex, options);
   md.block.ruler.push('katex', parseBlockKatex, options);
-  md.renderer.rules.katex = (tokens, idx) => renderKatex(tokens[idx].content, tokens[idx].block);
+  md.renderer.rules.katex = (tokens, idx) => {
+    const token = tokens[idx];
+    const rendered = renderKatex(token.content, token.block);
+    // Return clean HTML without any markdown artifacts
+    return rendered;
+  };
   md.renderer.rules.katex.delimiter = delimiter;
 };
 

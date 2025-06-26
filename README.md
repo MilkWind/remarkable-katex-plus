@@ -67,8 +67,8 @@ If you use TypeScript, you can import the plugin with the correct types by steps
 // remarkable-katex-plus.d.ts
 // create this file in any directory you want, such as "types/remarkable-katex.d.ts"
 declare module 'remarkable-katex-plus' {
-    const rkatex: (md: Remarkable, options?: object) => void;
-    export = rkatex;
+  const rkatex: (md: Remarkable, options?: { delimiter: string, useTailwind: boolean }) => void;
+  export = rkatex;
 }
 ```
 

@@ -245,7 +245,7 @@ vows.describe('KatexPlugin').addBatch({
       const md = new Remarkable();
       md.use(plugin, { useTailwind: false });
       // Create a mock rendered output with aria-hidden elements
-      const { applyCustomStyling } = require('./utils');
+      const { applyCustomStyling } = require('./katex-utils');
       const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
       return applyCustomStyling(mockHtml, { useTailwind: false });
     },
@@ -259,7 +259,7 @@ vows.describe('KatexPlugin').addBatch({
       const md = new Remarkable();
       md.use(plugin, { useTailwind: true });
       // Create a mock rendered output with aria-hidden elements
-      const { applyCustomStyling } = require('./utils');
+      const { applyCustomStyling } = require('./katex-utils');
       const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
       return applyCustomStyling(mockHtml, { useTailwind: true });
     },

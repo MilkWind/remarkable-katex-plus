@@ -1,12 +1,12 @@
 {
-  "name": "remarkable-katex-plus",
+  "name": "remarkable-mermaid-plus",
   "version": "1.0.0",
-  "description": "Plugin for Remarkable to process embedded math expressions in Markdown text.",
+  "description": "Plugin for Remarkable to process embedded mermaid code in Markdown text.",
   "main": "index.js",
-  "homepage": "https://github.com/MilkWind/remarkable-katex-plus",
+  "homepage": "https://github.com/MilkWind/remarkable-mermaid-plus",
   "keywords": [
     "remarkable",
-    "katex",
+    "mermaid",
     "latex",
     "markdown"
   ],
@@ -17,13 +17,12 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "katex": "0",
     "remarkable": "2",
     "vows": "0"
   },
   "repository": {
     "type": "https",
-    "url": "https://github.com/MilkWind/remarkable-katex-plus.git"
+    "url": "https://github.com/MilkWind/remarkable-mermaid-plus.git"
   },
   "scripts": {
     "test": "npx vows --spec index.test.js"

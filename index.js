@@ -1,47 +1,40 @@
 "use strict";
 
 /**
- * Plugin for Remarkable Markdown processor which transforms $..$ and $$..$$ sequences into math HTML using the
- * Katex package.
+ * Plugin for Remarkable Markdown processor which transforms ```mermaid code blocks into Mermaid diagrams.
  */
-const rkatex = (md, options) => {
-  const dollar = '$';
+const rmermaid = (md, options) => {
   const opts = options || {};
-  const delimiter = opts.delimiter || dollar;
-  if (delimiter.length !== 1) { throw new Error('invalid delimiter'); }
 
   // Import all utilities including conversion functions
-  const { renderKatex, parseBlockKatex, parseInlineKatex } = require('./katex-utils');
+  const { parseFenceMermaid, renderMermaid, applyMermaidStyling } = require('./mermaid-utils');
 
-  // Extract styling configuration (kept for backward compatibility)
-  const stylingConfig = {
-    useTailwind: opts.useTailwind || false,
-    // Add other styling options here as needed
+  // Extract Mermaid configuration
+  const mermaidConfig = {
+    includeScript: opts.includeScript || false,
+    customClass: opts.mermaidCustomClass || '',
+    customStyle: opts.mermaidCustomStyle || '',
+    // Add other Mermaid options here as needed
   };
 
   /**
-   * Wrapper for block KaTeX parsing
+   * Wrapper for fence Mermaid parsing
    */
-  const parseBlockKatexWrapper = (state, startLine, endLine) => {
-    return parseBlockKatex(state, startLine, endLine, delimiter);
+  const parseFenceMermaidWrapper = (state, startLine, endLine) => {
+    return parseFenceMermaid(state, startLine, endLine);
   };
 
-  /**
-   * Wrapper for inline KaTeX parsing
-   */
-  const parseInlineKatexWrapper = (state, silent) => {
-    return parseInlineKatex(state, silent, delimiter);
-  };
+  // Register Mermaid parser BEFORE the default fences parser
+  // This ensures our Mermaid parser runs before the default code block parser
+  md.block.ruler.before('fences', 'mermaid', parseFenceMermaidWrapper, options);
 
-  md.inline.ruler.push('katex', parseInlineKatexWrapper, options);
-  md.block.ruler.push('katex', parseBlockKatexWrapper, options);
-  md.renderer.rules.katex = (tokens, idx) => {
+  // Register Mermaid renderer
+  md.renderer.rules.mermaid = (tokens, idx) => {
     const token = tokens[idx];
-    const rendered = renderKatex(token.content, token.block, stylingConfig);
-    // Return clean HTML without any markdown artifacts
-    return rendered;
+    const rendered = renderMermaid(token.content, mermaidConfig);
+    // Apply custom styling if configured
+    return applyMermaidStyling(rendered, mermaidConfig);
   };
-  md.renderer.rules.katex.delimiter = delimiter;
 };
 
-module.exports = rkatex;
+module.exports = rmermaid;

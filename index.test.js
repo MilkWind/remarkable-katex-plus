@@ -6,266 +6,115 @@ const { Remarkable } = require('remarkable');
 
 const plugin = require('./index.js');
 
-const mdWithDollar = new Remarkable();
-mdWithDollar.use(plugin);
+const md = new Remarkable();
+md.use(plugin);
 
-const mdWithAt = new Remarkable();
-mdWithAt.use(plugin, {delimiter: '@'});
-
-vows.describe('KatexPlugin').addBatch({
-  'Config empty delimiter': {
+vows.describe('MermaidPlugin').addBatch({
+  'Render simple Mermaid diagram': {
+    topic: md.render('```mermaid\ngraph TD\n    A-->B\n```'),
+    'Contains mermaid div': function(topic) {
+      assert.notEqual(topic.indexOf('<div class="mermaid"'), -1);
+    },
+    'Contains diagram content': function(topic) {
+      assert.notEqual(topic.indexOf('graph TD'), -1);
+      assert.notEqual(topic.indexOf('A--&gt;B'), -1);
+    },
+    'Has unique id': function(topic) {
+      assert.notEqual(topic.indexOf('id="mermaid-'), -1);
+    }
+  },
+  'Render Mermaid flowchart': {
+    topic: md.render('```mermaid\nflowchart LR\n    Start --> End\n```'),
+    'Contains mermaid div': function(topic) {
+      assert.notEqual(topic.indexOf('<div class="mermaid"'), -1);
+    },
+    'Contains flowchart content': function(topic) {
+      assert.notEqual(topic.indexOf('flowchart LR'), -1);
+      assert.notEqual(topic.indexOf('Start --&gt; End'), -1);
+    }
+  },
+  'Render Mermaid sequence diagram': {
+    topic: md.render('```mermaid\nsequenceDiagram\n    Alice->>Bob: Hello\n```'),
+    'Contains mermaid div': function(topic) {
+      assert.notEqual(topic.indexOf('<div class="mermaid"'), -1);
+    },
+    'Contains sequence diagram content': function(topic) {
+      assert.notEqual(topic.indexOf('sequenceDiagram'), -1);
+      assert.notEqual(topic.indexOf('Alice-&gt;&gt;Bob: Hello'), -1);
+    }
+  },
+  'Ignore non-mermaid code blocks': {
+    topic: md.render('```javascript\nconst x = 1;\n```'),
+    'No mermaid div': function(topic) {
+      assert.equal(topic.indexOf('<div class="mermaid"'), -1);
+    },
+    'Regular code block': function(topic) {
+      assert.notEqual(topic.indexOf('<pre><code class="language-javascript">'), -1);
+    }
+  },
+  'Incomplete mermaid block (no closing)': {
+    topic: md.render('```mermaid\ngraph TD\n    A-->B'),
+    'No mermaid div': function(topic) {
+      assert.equal(topic.indexOf('<div class="mermaid"'), -1);
+    },
+    'Falls back to code block': function(topic) {
+      assert.notEqual(topic.indexOf('<pre><code class="language-mermaid">'), -1);
+    }
+  },
+  'Empty mermaid block': {
+    topic: md.render('```mermaid\n```'),
+    'Contains mermaid div': function(topic) {
+      assert.notEqual(topic.indexOf('<div class="mermaid"'), -1);
+    },
+    'Empty content': function(topic) {
+      assert.notEqual(topic.indexOf('></div>'), -1);
+    }
+  },
+  'Mermaid with custom options': {
     topic() {
       const md = new Remarkable();
-      md.use(plugin, {delimiter: ''});
-      return md;
+      md.use(plugin, {
+        mermaidCustomClass: 'custom-class',
+        mermaidCustomStyle: 'border: 1px solid red;'
+      });
+      return md.render('```mermaid\ngraph TD\n    A-->B\n```');
     },
-    'Uses default delimiter': function(topic) {
-      assert.equal(topic.renderer.rules.katex.delimiter, '$');
+    'Contains custom class': function(topic) {
+      assert.notEqual(topic.indexOf('class="mermaid custom-class"'), -1);
+    },
+    'Contains custom style': function(topic) {
+      assert.notEqual(topic.indexOf('style="border: 1px solid red;"'), -1);
     }
   },
-  'Multi-char delimiter': {
-    topic() {
-      return () => {
-        const md = new Remarkable();
-        md.use(plugin, {delimiter: '$$'});
-        return md;
-      };
-    },
-    'Throws exception': function(topic) {
-      assert.throws(topic);
-    }
-  },
-  'Render plain text': {
-    topic: mdWithDollar.render('This is a test.'),
-    'Nothing done': function(topic) {
-      assert.equal(topic, '<p>This is a test.</p>\n');
-    }
-  },
-  'Render with single $ in text': {
-    topic: mdWithDollar.render('The car cost $20,000 new.'),
-    'Nothing done': function(topic) {
-      assert.equal(topic, '<p>The car cost $20,000 new.</p>\n');
-    }
-  },
-  'Render $...$ in text': {
-    topic: mdWithDollar.render('Equation $x + y$.'),
-    'Starts with "<p>Equation "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Equation '));
-    },
-    'Ends with ".</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span>.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    }
-  },
-  'Render $...$ in text with embedded {$...$}': {
-    topic: mdWithDollar.render('Equation $\\colorbox{aqua}{$F=ma$}$.'),
-    'Starts with "<p>Equation "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Equation '));
-    },
-    'Ends with ".</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span>.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    }
-  },
-  'Render $...$ in text with embedded {': {
-    topic: mdWithDollar.render('Equation $\\left\\{ hi \\right.$.'),
-    'Starts with "<p>Equation "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Equation '));
-    },
-    'Ends with ".</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span>.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    }
-  },
-  'Render $...$ in text with embedded }': {
-    topic: mdWithDollar.render('Equation $\\left\\{ hi \\right\\}$.'),
-    'Starts with "<p>Equation "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Equation '));
-    },
-    'Ends with ".</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span>.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    }
-  },
-  'Render @...@ in text': {
-    topic: mdWithAt.render('Equation @x + y@.'),
-    'Starts with "<p>Equation "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Equation '));
-    },
-    'Ends with ".</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span>.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    }
-  },
-  'Render $$...$$ in text': {
-    topic: mdWithDollar.render('Before\n$$\nx + y\n$$\nafter.'),
-    'Starts with "<p>Before "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Before\n'));
-    },
-    'Ends with "after.</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span>\nafter.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex-display">'), -1);
-    }
-  },
-  'Render @@...@@ in text': {
-    topic: mdWithAt.render('Before @@x + y@@ after.'),
-    'Starts with "<p>Before "': function(topic) {
-      assert.isTrue(topic.startsWith('<p>Before '));
-    },
-    'Ends with "after.</p>"': function(topic) {
-      assert.isTrue(topic.endsWith('</span> after.</p>\n'));
-    },
-    'Contains math span': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex-display">'), -1);
-    }
-  },
-  'Incomplete inline expression (no closing delimiter)': {
-    topic: mdWithDollar.render('This has $incomplete math expression.'),
-    'Original text preserved': function(topic) {
-      assert.equal(topic, '<p>This has $incomplete math expression.</p>\n');
-    },
-    'No KaTeX HTML generated': function(topic) {
-      assert.equal(topic.indexOf('<span class="katex">'), -1);
-    }
-  },
-  'Incomplete block expression (no closing delimiter)': {
-    topic: mdWithDollar.render('Before\n$$\nincomplete block\nafter.'),
-    'Original text preserved': function(topic) {
-      assert.equal(topic, '<p>Before\n$$\nincomplete block\nafter.</p>\n');
-    },
-    'No KaTeX HTML generated': function(topic) {
-      assert.equal(topic.indexOf('<span class="katex-display">'), -1);
-    }
-  },
-  'Original expression completely removed in inline math': {
-    topic: mdWithDollar.render('Test $x^2$ here.'),
-    'No dollar signs in output': function(topic) {
-      // Should not contain the original $ delimiters
-      assert.equal(topic.indexOf('$x^2$'), -1);
-    },
-    'Contains rendered math': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    },
-    'Contains x^2 in rendered form': function(topic) {
-      // KaTeX should render x^2 as superscript
-      assert.notEqual(topic.indexOf('x'), -1);
-      assert.notEqual(topic.indexOf('2'), -1);
-    }
-  },
-  'Original expression completely removed in block math': {
-    topic: mdWithDollar.render('Before\n$$\n\\frac{a}{b}\n$$\nafter.'),
-    'No double dollar signs in output': function(topic) {
-      // Should not contain the original $$ delimiters
-      assert.equal(topic.indexOf('$$'), -1);
-    },
-    'Raw LaTeX preserved in annotation (correct behavior)': function(topic) {
-      // KaTeX preserves original LaTeX in annotation tags - this is correct
-      assert.notEqual(topic.indexOf('\\frac{a}{b}'), -1);
-      assert.notEqual(topic.indexOf('<annotation encoding="application/x-tex">'), -1);
-    },
-    'Contains rendered math': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex-display">'), -1);
-    }
-  },
-  'Multiple expressions all converted': {
-    topic: mdWithDollar.render('First $a+b$ and second $c+d$ expressions.'),
-    'No dollar signs remain': function(topic) {
-      assert.equal(topic.indexOf('$a+b$'), -1);
-      assert.equal(topic.indexOf('$c+d$'), -1);
-    },
-    'Two math spans created': function(topic) {
-      const matches = topic.match(/<span class="katex">/g);
-      assert.equal(matches ? matches.length : 0, 2);
-    }
-  },
-  'Mixed inline and block expressions': {
-    topic: mdWithDollar.render('Inline $x$ and block:\n$$\ny = mx + b\n$$\ndone.'),
-    'No original delimiters remain': function(topic) {
-      assert.equal(topic.indexOf('$x$'), -1);
-      assert.equal(topic.indexOf('$$'), -1);
-      // Note: "y = mx + b" will be preserved in KaTeX annotation - this is correct
-    },
-    'Contains both inline and block math': function(topic) {
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-      assert.notEqual(topic.indexOf('<span class="katex-display">'), -1);
-    },
-    'LaTeX content preserved in annotations': function(topic) {
-      // KaTeX correctly preserves LaTeX in annotations
-      assert.notEqual(topic.indexOf('<annotation encoding="application/x-tex">x</annotation>'), -1);
-      assert.notEqual(topic.indexOf('<annotation encoding="application/x-tex">y = mx + b</annotation>'), -1);
-    }
-  },
-  'KaTeX error handling (throwOnError: false)': {
-    topic: mdWithDollar.render('Invalid math: $\\invalidcommand{test}$.'),
-    'Renders without throwing': function(topic) {
-      // Should render something even with invalid LaTeX (due to throwOnError: false)
-      assert.isTrue(topic.length > 0);
-      assert.notEqual(topic.indexOf('<span class="katex">'), -1);
-    },
-    'No original delimiters remain': function(topic) {
-      assert.equal(topic.indexOf('$\\invalidcommand{test}$'), -1);
-    }
-  },
-  'Config with useTailwind=false (default)': {
+  'Mermaid with script inclusion': {
     topic() {
       const md = new Remarkable();
-      md.use(plugin, { useTailwind: false });
-      return md;
+      md.use(plugin, {
+        includeScript: true
+      });
+      return md.render('```mermaid\ngraph TD\n    A-->B\n```');
     },
-    'Configuration applied correctly': function(topic) {
-      // Test that configuration is accepted without error
-      assert.isObject(topic);
+    'Contains initialization script': function(topic) {
+      assert.notEqual(topic.indexOf('<script>'), -1);
+      assert.notEqual(topic.indexOf('mermaid.init'), -1);
     }
   },
-  'Config with useTailwind=true': {
-    topic() {
-      const md = new Remarkable();
-      md.use(plugin, { useTailwind: true });
-      return md;
+  'HTML escaping in Mermaid': {
+    topic: md.render('```mermaid\ngraph TD\n    A[\"Hello <world>\"]\n```'),
+    'HTML characters escaped': function(topic) {
+      assert.notEqual(topic.indexOf('&lt;world&gt;'), -1);
     },
-    'Configuration applied correctly': function(topic) {
-      // Test that configuration is accepted without error
-      assert.isObject(topic);
+    'No unescaped HTML': function(topic) {
+      assert.equal(topic.indexOf('<world>'), -1);
     }
   },
-  'Aria-hidden processing with default styling': {
-    topic() {
-      const md = new Remarkable();
-      md.use(plugin, { useTailwind: false });
-      // Create a mock rendered output with aria-hidden elements
-      const { applyCustomStyling } = require('./katex-utils');
-      const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
-      return applyCustomStyling(mockHtml, { useTailwind: false });
+  'Case insensitive mermaid': {
+    topic: md.render('```MERMAID\ngraph TD\n    A-->B\n```'),
+    'Contains mermaid div': function(topic) {
+      assert.notEqual(topic.indexOf('<div class="mermaid"'), -1);
     },
-    'Removes inline class and adds display:none style': function(topic) {
-      assert.equal(topic.indexOf('class="inline"'), -1);
-      assert.notEqual(topic.indexOf('style="display:none"'), -1);
-    }
-  },
-  'Aria-hidden processing with Tailwind styling': {
-    topic() {
-      const md = new Remarkable();
-      md.use(plugin, { useTailwind: true });
-      // Create a mock rendered output with aria-hidden elements
-      const { applyCustomStyling } = require('./katex-utils');
-      const mockHtml = '<span class="inline" aria-hidden="true">hidden content</span>';
-      return applyCustomStyling(mockHtml, { useTailwind: true });
-    },
-    'Removes inline class and adds display:none style': function(topic) {
-      assert.equal(topic.indexOf('class="inline"'), -1);
-      assert.notEqual(topic.indexOf('style="display:none"'), -1);
+    'Contains diagram content': function(topic) {
+      assert.notEqual(topic.indexOf('graph TD'), -1);
     }
   }
 }).export(module);
